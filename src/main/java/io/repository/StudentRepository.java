@@ -7,14 +7,11 @@ import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.CreateTableResult;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
-import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
-import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import io.model.Employee;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -49,6 +46,8 @@ public class StudentRepository {
         item.put(DEPARTMENT, new AttributeValue(employee.getDepartment()));
 
         ddb.putItem(TABLE_NAME, item);
+
+        System.out.println("\nData inserted for id:" + employee.getId());
     }
 
     public Optional<Employee> getItem(String id) {

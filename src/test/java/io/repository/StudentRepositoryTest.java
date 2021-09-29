@@ -1,28 +1,27 @@
 package io.repository;
 
-import cloud.localstack.Localstack;
-import cloud.localstack.LocalstackTestRunner;
-import cloud.localstack.docker.annotation.LocalstackDockerProperties;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.model.ListTablesRequest;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
+import io.TestHelper;
 import io.model.Employee;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
 import static io.repository.StudentRepository.TABLE_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@RunWith(LocalstackTestRunner.class)
-@LocalstackDockerProperties(services = {"dynamodb"})
-public class StudentRepositoryTest {
+@ExtendWith(TestHelper.class)
+class StudentRepositoryTest {
+    private static final String DOCKER_DDB_URL = "http://localhost:4566";
+    private static final String LOCALHOST = "localhost";
     private static StudentRepository repository;
 
     private static AmazonDynamoDB ddb;
@@ -30,7 +29,7 @@ public class StudentRepositoryTest {
     private static String name = "Name1";
     private static String department = "Department1";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         ddb = getLocalDdbClient();
 
@@ -44,14 +43,14 @@ public class StudentRepositoryTest {
         addDummyItem();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         deleteTable(TABLE_NAME);
     }
 
     @Test
     public void shouldReturnEmptyOptionalIfEmployeeNotFound() {
-        assertFalse(repository.getItem("5").isPresent());
+        assertFalse(repository.getItem("non-existent-id").isPresent());
     }
 
     @Test
@@ -63,10 +62,12 @@ public class StudentRepositoryTest {
     }
 
     private static AmazonDynamoDB getLocalDdbClient() {
-        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(Localstack.INSTANCE.getEndpointDynamoDB(), "localhost");
+        AwsClientBuilder.EndpointConfiguration endpoint =
+                new AwsClientBuilder.EndpointConfiguration(DOCKER_DDB_URL, LOCALHOST);
+
         return AmazonDynamoDBClientBuilder.standard()
                 .withEndpointConfiguration(endpoint)
-                .withRegion("localhost")
+                .withRegion(LOCALHOST)
                 .build();
     }
 
